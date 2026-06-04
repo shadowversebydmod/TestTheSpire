@@ -1,0 +1,219 @@
+<Project>
+    <PropertyGroup>
+        <Sts2TestModId Condition="'$(Sts2TestModId)' == '' and '$(AssemblyName)' != ''">$(AssemblyName)</Sts2TestModId>
+        <Sts2TestModId Condition="'$(Sts2TestModId)' == ''">$(MSBuildProjectName)</Sts2TestModId>
+        <Sts2TestModName Condition="'$(Sts2TestModName)' == ''">$(MSBuildProjectName)</Sts2TestModName>
+        <Sts2TestModAuthor Condition="'$(Sts2TestModAuthor)' == ''">shadowversebydmod group</Sts2TestModAuthor>
+        <Sts2TestModVersion Condition="'$(Sts2TestModVersion)' == ''">0.1.0</Sts2TestModVersion>
+        <Sts2TestAffectsGameplay Condition="'$(Sts2TestAffectsGameplay)' == ''">true</Sts2TestAffectsGameplay>
+        <Sts2TestPayloadDir Condition="'$(Sts2TestPayloadDir)' == ''">$(MSBuildProjectDirectory)/mod</Sts2TestPayloadDir>
+        <Sts2TestDependencyPayloadRoot Condition="'$(Sts2TestDependencyPayloadRoot)' == ''">$(MSBuildProjectDirectory)/mod-deps</Sts2TestDependencyPayloadRoot>
+        <TestTheSpireModId Condition="'$(TestTheSpireModId)' == ''">TestTheSpire</TestTheSpireModId>
+        <Sts2XunitAssertModId Condition="'$(Sts2XunitAssertModId)' == ''">xunit.v3.assert</Sts2XunitAssertModId>
+        <TestTheSpirePayloadDir Condition="'$(TestTheSpirePayloadDir)' == ''">$(Sts2TestDependencyPayloadRoot)/$(TestTheSpireModId)</TestTheSpirePayloadDir>
+        <Sts2XunitAssertPayloadDir Condition="'$(Sts2XunitAssertPayloadDir)' == ''">$(Sts2TestDependencyPayloadRoot)/$(Sts2XunitAssertModId)</Sts2XunitAssertPayloadDir>
+        <TestTheSpireManifestPath Condition="'$(TestTheSpireManifestPath)' == ''">$(TestTheSpirePayloadDir)/$(TestTheSpireModId).json</TestTheSpireManifestPath>
+        <Sts2XunitAssertManifestPath Condition="'$(Sts2XunitAssertManifestPath)' == ''">$(Sts2XunitAssertPayloadDir)/$(Sts2XunitAssertModId).json</Sts2XunitAssertManifestPath>
+        <Sts2GeneratedManifestDir Condition="'$(Sts2GeneratedManifestDir)' == '' and '$(IntermediateOutputPath)' != ''">$(IntermediateOutputPath)Sts2Test</Sts2GeneratedManifestDir>
+        <Sts2GeneratedManifestDir Condition="'$(Sts2GeneratedManifestDir)' == ''">$(MSBuildProjectDirectory)/obj/$(Configuration)/$(TargetFramework)/Sts2Test</Sts2GeneratedManifestDir>
+        <Sts2GeneratedManifestPath Condition="'$(Sts2GeneratedManifestPath)' == ''">$(Sts2GeneratedManifestDir)/$(Sts2TestModId).json</Sts2GeneratedManifestPath>
+        <Sts2TestXdgDataHome Condition="'$(Sts2TestXdgDataHome)' == ''">/tmp/sts2-combat-tests/$(Sts2TestModId)</Sts2TestXdgDataHome>
+        <Sts2SettingsPath Condition="'$(Sts2SettingsPath)' == ''">$(Sts2TestXdgDataHome)/SlayTheSpire2/default/1/settings.save</Sts2SettingsPath>
+        <Sts2Path Condition="'$(Sts2Path)' == '' and '$(Sts2Dir)' != ''">$(Sts2Dir)</Sts2Path>
+        <Sts2DataDir Condition="'$(Sts2DataDir)' == '' and '$(Sts2Path)' != '' and $([MSBuild]::IsOSPlatform('Windows'))">$(Sts2Path)/data_sts2_windows_x86_64</Sts2DataDir>
+        <Sts2DataDir Condition="'$(Sts2DataDir)' == '' and '$(Sts2Path)' != '' and $([MSBuild]::IsOSPlatform('OSX'))">$(Sts2Path)/SlayTheSpire2.app/Contents/Resources/data_sts2_macos_x86_64</Sts2DataDir>
+        <Sts2DataDir Condition="'$(Sts2DataDir)' == '' and '$(Sts2Path)' != ''">$(Sts2Path)/data_sts2_linuxbsd_x86_64</Sts2DataDir>
+        <GodotSharpPath Condition="'$(GodotSharpPath)' == '' and Exists('$(Sts2DataDir)/GodotSharp.dll')">$(Sts2DataDir)/GodotSharp.dll</GodotSharpPath>
+        <GodotSharpPath Condition="'$(GodotSharpPath)' == ''">$(Sts2DataDir)/GodotSharp/Api/Debug/GodotSharp.dll</GodotSharpPath>
+        <Sts2Executable Condition="'$(Sts2Executable)' == '' and '$(Sts2Path)' != '' and $([MSBuild]::IsOSPlatform('Windows'))">$(Sts2Path)/SlayTheSpire2.exe</Sts2Executable>
+        <Sts2Executable Condition="'$(Sts2Executable)' == '' and '$(Sts2Path)' != ''">$(Sts2Path)/SlayTheSpire2</Sts2Executable>
+        <Sts2ModsDir Condition="'$(Sts2ModsDir)' == '' and '$(Sts2Path)' != ''">$(Sts2Path)/mods</Sts2ModsDir>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(Sts2DataDir)' != ''">
+        <Reference Include="sts2">
+            <HintPath>$(Sts2DataDir)/sts2.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="GodotSharp">
+            <HintPath>$(GodotSharpPath)</HintPath>
+            <Private>false</Private>
+        </Reference>
+    </ItemGroup>
+
+    <Target Name="InferSts2TestModProperties">
+        <ItemGroup Condition="'$(Sts2MainModId)' == ''">
+            <_Sts2MainModProject Include="@(ProjectReference)"
+                                  Condition="'%(Filename)' != 'TestTheSpire' and !$([System.String]::Copy('%(Filename)').EndsWith('.Tests'))"/>
+        </ItemGroup>
+        <PropertyGroup Condition="'$(Sts2MainModId)' == '' and '@(_Sts2MainModProject)' != ''">
+            <Sts2MainModId>%(_Sts2MainModProject.Filename)</Sts2MainModId>
+        </PropertyGroup>
+        <PropertyGroup Condition="'$(Sts2TestModDescription)' == ''">
+            <Sts2TestModDescription>Headless combat assertion harness for $(Sts2MainModId).</Sts2TestModDescription>
+        </PropertyGroup>
+    </Target>
+
+    <Target Name="ValidateSts2TestPaths" DependsOnTargets="InferSts2TestModProperties">
+        <Error Condition="'$(Sts2DataDir)' == ''" Text="Set Sts2DataDir before building or running STS2 tests."/>
+        <Error Condition="!Exists('$(Sts2DataDir)/sts2.dll')" Text="sts2.dll was not found under $(Sts2DataDir)."/>
+        <Error Condition="!Exists('$(GodotSharpPath)')" Text="GodotSharp.dll was not found at $(GodotSharpPath)."/>
+        <Error Condition="'$(Sts2TestModId)' == ''" Text="Set Sts2TestModId or AssemblyName before running STS2 tests."/>
+    </Target>
+
+    <Target Name="GenerateSts2TestManifest" DependsOnTargets="InferSts2TestModProperties">
+        <MakeDir Directories="$(Sts2GeneratedManifestDir)"/>
+        <ItemGroup>
+            <_Sts2ManifestLine Include="{"/>
+            <_Sts2ManifestLine Include="  &quot;id&quot;: &quot;$(Sts2TestModId)&quot;,"/>
+            <_Sts2ManifestLine Include="  &quot;name&quot;: &quot;$(Sts2TestModName)&quot;,"/>
+            <_Sts2ManifestLine Include="  &quot;author&quot;: &quot;$(Sts2TestModAuthor)&quot;,"/>
+            <_Sts2ManifestLine Include="  &quot;description&quot;: &quot;$(Sts2TestModDescription)&quot;,"/>
+            <_Sts2ManifestLine Include="  &quot;version&quot;: &quot;$(Sts2TestModVersion)&quot;,"/>
+            <_Sts2ManifestLine Include="  &quot;has_pck&quot;: false,"/>
+            <_Sts2ManifestLine Include="  &quot;has_dll&quot;: true,"/>
+            <_Sts2ManifestLine Include="  &quot;dependencies&quot;: ["/>
+            <_Sts2ManifestLine Include="    &quot;$(TestTheSpireModId)&quot;," Condition="'$(Sts2MainModId)' != ''"/>
+            <_Sts2ManifestLine Include="    &quot;$(TestTheSpireModId)&quot;" Condition="'$(Sts2MainModId)' == ''"/>
+            <_Sts2ManifestLine Include="    &quot;$(Sts2MainModId)&quot;" Condition="'$(Sts2MainModId)' != ''"/>
+            <_Sts2ManifestLine Include="  ],"/>
+            <_Sts2ManifestLine Include="  &quot;affects_gameplay&quot;: $(Sts2TestAffectsGameplay)"/>
+            <_Sts2ManifestLine Include="}"/>
+        </ItemGroup>
+        <WriteLinesToFile File="$(Sts2GeneratedManifestPath)"
+                          Lines="@(_Sts2ManifestLine)"
+                          Overwrite="true"
+                          WriteOnlyWhenDifferent="true"/>
+    </Target>
+
+    <Target Name="CopySts2TestDependencyMods" DependsOnTargets="ResolveReferences" AfterTargets="Build">
+        <ItemGroup>
+            <_TestTheSpireAssembly Include="@(ReferenceCopyLocalPaths)"
+                                               Condition="'%(ReferenceCopyLocalPaths.NuGetPackageId)' == 'TestTheSpire'"/>
+            <_Sts2XunitAssertAssembly Include="@(ReferenceCopyLocalPaths)"
+                                      Condition="'%(ReferenceCopyLocalPaths.NuGetPackageId)' == 'xunit.v3.assert'"/>
+        </ItemGroup>
+
+        <Error Condition="'@(_TestTheSpireAssembly)' == ''" Text="TestTheSpire.dll was not resolved from NuGet."/>
+        <Error Condition="'@(_Sts2XunitAssertAssembly)' == ''" Text="xunit.v3.assert.dll was not resolved from NuGet."/>
+
+        <RemoveDir Directories="$(TestTheSpirePayloadDir);$(Sts2XunitAssertPayloadDir)"/>
+        <MakeDir Directories="$(TestTheSpirePayloadDir);$(Sts2XunitAssertPayloadDir)"/>
+
+        <Copy SourceFiles="@(_TestTheSpireAssembly)"
+              DestinationFiles="@(_TestTheSpireAssembly->'$(TestTheSpirePayloadDir)/$(TestTheSpireModId).dll')"
+              SkipUnchangedFiles="true"/>
+        <Copy SourceFiles="@(_Sts2XunitAssertAssembly)"
+              DestinationFiles="@(_Sts2XunitAssertAssembly->'$(Sts2XunitAssertPayloadDir)/$(Sts2XunitAssertModId).dll')"
+              SkipUnchangedFiles="true"/>
+
+        <ItemGroup>
+            <_Sts2XunitAssertManifestLine Include="{"/>
+            <_Sts2XunitAssertManifestLine Include="  &quot;id&quot;: &quot;$(Sts2XunitAssertModId)&quot;,"/>
+            <_Sts2XunitAssertManifestLine Include="  &quot;name&quot;: &quot;xUnit v3 Assert&quot;,"/>
+            <_Sts2XunitAssertManifestLine Include="  &quot;author&quot;: &quot;xUnit.net&quot;,"/>
+            <_Sts2XunitAssertManifestLine Include="  &quot;description&quot;: &quot;Assertion library dependency for STS2 combat tests.&quot;,"/>
+            <_Sts2XunitAssertManifestLine Include="  &quot;version&quot;: &quot;3.2.2&quot;,"/>
+            <_Sts2XunitAssertManifestLine Include="  &quot;has_pck&quot;: false,"/>
+            <_Sts2XunitAssertManifestLine Include="  &quot;has_dll&quot;: true,"/>
+            <_Sts2XunitAssertManifestLine Include="  &quot;dependencies&quot;: [],"/>
+            <_Sts2XunitAssertManifestLine Include="  &quot;affects_gameplay&quot;: false"/>
+            <_Sts2XunitAssertManifestLine Include="}"/>
+
+            <_TestTheSpireManifestLine Include="{"/>
+            <_TestTheSpireManifestLine Include="  &quot;id&quot;: &quot;$(TestTheSpireModId)&quot;,"/>
+            <_TestTheSpireManifestLine Include="  &quot;name&quot;: &quot;TestTheSpire&quot;,"/>
+            <_TestTheSpireManifestLine Include="  &quot;author&quot;: &quot;shadowversebydmod group&quot;,"/>
+            <_TestTheSpireManifestLine Include="  &quot;description&quot;: &quot;Reusable headless combat test runner for STS2 mods.&quot;,"/>
+            <_TestTheSpireManifestLine Include="  &quot;version&quot;: &quot;0.1.0&quot;,"/>
+            <_TestTheSpireManifestLine Include="  &quot;has_pck&quot;: false,"/>
+            <_TestTheSpireManifestLine Include="  &quot;has_dll&quot;: true,"/>
+            <_TestTheSpireManifestLine Include="  &quot;dependencies&quot;: ["/>
+            <_TestTheSpireManifestLine Include="    &quot;$(Sts2XunitAssertModId)&quot;"/>
+            <_TestTheSpireManifestLine Include="  ],"/>
+            <_TestTheSpireManifestLine Include="  &quot;affects_gameplay&quot;: false"/>
+            <_TestTheSpireManifestLine Include="}"/>
+        </ItemGroup>
+
+        <WriteLinesToFile File="$(Sts2XunitAssertManifestPath)"
+                          Lines="@(_Sts2XunitAssertManifestLine)"
+                          Overwrite="true"
+                          WriteOnlyWhenDifferent="true"/>
+        <WriteLinesToFile File="$(TestTheSpireManifestPath)"
+                          Lines="@(_TestTheSpireManifestLine)"
+                          Overwrite="true"
+                          WriteOnlyWhenDifferent="true"/>
+    </Target>
+
+    <Target Name="CopySts2TestPayload" DependsOnTargets="Build;GenerateSts2TestManifest;CopySts2TestDependencyMods">
+        <RemoveDir Directories="$(Sts2TestPayloadDir)"/>
+        <MakeDir Directories="$(Sts2TestPayloadDir)"/>
+        <ItemGroup>
+            <Sts2TestPayload Include="$(TargetPath)"/>
+            <Sts2TestPayload Include="$(TargetDir)$(TargetName).pdb" Condition="Exists('$(TargetDir)$(TargetName).pdb')"/>
+            <Sts2TestPayload Include="$(Sts2GeneratedManifestPath)"/>
+            <Sts2TestPayload Include="@(Sts2TestExtraPayload)"/>
+        </ItemGroup>
+        <Copy SourceFiles="@(Sts2TestPayload)"
+              DestinationFolder="$(Sts2TestPayloadDir)"
+              SkipUnchangedFiles="true"/>
+    </Target>
+
+    <Target Name="ConfigureSts2TestSettings" DependsOnTargets="InferSts2TestModProperties">
+        <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(Sts2SettingsPath)'))"/>
+        <ItemGroup>
+            <_Sts2SettingsLine Include="{"/>
+            <_Sts2SettingsLine Include="  &quot;mod_settings&quot;: {"/>
+            <_Sts2SettingsLine Include="    &quot;mods_enabled&quot;: true,"/>
+            <_Sts2SettingsLine Include="    &quot;mod_list&quot;: ["/>
+            <_Sts2SettingsLine Include="      { &quot;id&quot;: &quot;$(Sts2XunitAssertModId)&quot;, &quot;source&quot;: &quot;mods_directory&quot;, &quot;is_enabled&quot;: true },"/>
+            <_Sts2SettingsLine Include="      { &quot;id&quot;: &quot;$(TestTheSpireModId)&quot;, &quot;source&quot;: &quot;mods_directory&quot;, &quot;is_enabled&quot;: true },"/>
+            <_Sts2SettingsLine Include="      { &quot;id&quot;: &quot;$(Sts2MainModId)&quot;, &quot;source&quot;: &quot;mods_directory&quot;, &quot;is_enabled&quot;: true }," Condition="'$(Sts2MainModId)' != ''"/>
+            <_Sts2SettingsLine Include="      { &quot;id&quot;: &quot;$(Sts2TestModId)&quot;, &quot;source&quot;: &quot;mods_directory&quot;, &quot;is_enabled&quot;: true }"/>
+            <_Sts2SettingsLine Include="    ]"/>
+            <_Sts2SettingsLine Include="  },"/>
+            <_Sts2SettingsLine Include="  &quot;skip_intro_logo&quot;: true,"/>
+            <_Sts2SettingsLine Include="  &quot;seen_ea_disclaimer&quot;: true"/>
+            <_Sts2SettingsLine Include="}"/>
+        </ItemGroup>
+        <WriteLinesToFile File="$(Sts2SettingsPath)"
+                          Lines="@(_Sts2SettingsLine)"
+                          Overwrite="true"
+                          WriteOnlyWhenDifferent="true"/>
+    </Target>
+
+    <Target Name="InstallSts2TestDependencyMods" DependsOnTargets="CopySts2TestDependencyMods">
+        <Error Condition="'$(Sts2ModsDir)' == ''" Text="Set Sts2ModsDir or Sts2Path before installing STS2 tests."/>
+        <MakeDir Directories="$(Sts2ModsDir)/$(Sts2XunitAssertModId);$(Sts2ModsDir)/$(TestTheSpireModId)"/>
+        <ItemGroup>
+            <_Sts2XunitAssertInstallPayload Include="$(Sts2XunitAssertPayloadDir)/**"/>
+            <_TestTheSpireInstallPayload Include="$(TestTheSpirePayloadDir)/**"/>
+        </ItemGroup>
+        <Copy SourceFiles="@(_Sts2XunitAssertInstallPayload)"
+              DestinationFiles="@(_Sts2XunitAssertInstallPayload->'$(Sts2ModsDir)/$(Sts2XunitAssertModId)/%(RecursiveDir)%(Filename)%(Extension)')"
+              SkipUnchangedFiles="true"/>
+        <Copy SourceFiles="@(_TestTheSpireInstallPayload)"
+              DestinationFiles="@(_TestTheSpireInstallPayload->'$(Sts2ModsDir)/$(TestTheSpireModId)/%(RecursiveDir)%(Filename)%(Extension)')"
+              SkipUnchangedFiles="true"/>
+    </Target>
+
+    <Target Name="InstallSts2TestMod" DependsOnTargets="ValidateSts2TestPaths;InstallSts2TestDependencyMods;CopySts2TestPayload;ConfigureSts2TestSettings">
+        <Error Condition="'$(Sts2ModsDir)' == ''" Text="Set Sts2ModsDir or Sts2Path before installing STS2 tests."/>
+        <MakeDir Directories="$(Sts2ModsDir)/$(Sts2TestModId)"/>
+        <Copy SourceFiles="@(Sts2TestPayload)"
+              DestinationFolder="$(Sts2ModsDir)/$(Sts2TestModId)"
+              SkipUnchangedFiles="true"/>
+    </Target>
+
+    <Target Name="RunSts2Tests" DependsOnTargets="InstallSts2TestMod">
+        <Error Condition="'$(Sts2Executable)' == '' or !Exists('$(Sts2Executable)')" Text="STS2 executable was not found at $(Sts2Executable)."/>
+        <Exec Command="&quot;$(Sts2Executable)&quot; --headless --force-steam=off --sts2-test $(Sts2TestArgs)"
+              EnvironmentVariables="XDG_DATA_HOME=$(Sts2TestXdgDataHome)"/>
+    </Target>
+
+    <Target Name="ListSts2Tests" DependsOnTargets="InstallSts2TestMod">
+        <Error Condition="'$(Sts2Executable)' == '' or !Exists('$(Sts2Executable)')" Text="STS2 executable was not found at $(Sts2Executable)."/>
+        <Exec Command="&quot;$(Sts2Executable)&quot; --headless --force-steam=off --sts2-test --sts2-test-list $(Sts2TestArgs)"
+              EnvironmentVariables="XDG_DATA_HOME=$(Sts2TestXdgDataHome)"/>
+    </Target>
+</Project>

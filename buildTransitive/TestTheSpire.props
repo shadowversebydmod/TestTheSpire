@@ -1,0 +1,5 @@
+<Project>
+    <PropertyGroup>
+        <CopyLocalLockFileAssemblies Condition="'$(CopyLocalLockFileAssemblies)' == ''">true</CopyLocalLockFileAssemblies>
+    </PropertyGroup>
+</Project>

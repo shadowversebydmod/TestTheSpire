@@ -1,0 +1,35 @@
+# Build outputs
+[Bb]in/
+[Oo]bj/
+artifacts/
+
+# NuGet package outputs
+*.nupkg
+*.snupkg
+
+# Test and coverage outputs
+TestResults/
+coverage/
+*.trx
+*.coverage
+*.coveragexml
+coverage.cobertura.xml
+
+# Local machine settings
+LocalSettings.props
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# IDEs and editors
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db

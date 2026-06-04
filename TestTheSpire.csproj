@@ -1,0 +1,64 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="GameFolder.props" Condition="Exists('GameFolder.props')"/>
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>true</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>13.0</LangVersion>
+        <AssemblyName>TestTheSpire</AssemblyName>
+        <RootNamespace>TestTheSpire</RootNamespace>
+        <IsPackable>true</IsPackable>
+        <PackageId>TestTheSpire</PackageId>
+        <Version>0.1.0</Version>
+        <Authors>shadowversebydmod group</Authors>
+        <Company>shadowversebydmod group</Company>
+        <Description>Headless combat test framework for Slay the Spire 2 mods.</Description>
+        <PackageLicenseExpression>LGPL-3.0-only</PackageLicenseExpression>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageTags>slay-the-spire-2;sts2;testing;modding</PackageTags>
+        <PackageOutputPath>$(MSBuildProjectDirectory)/artifacts/packages</PackageOutputPath>
+        <NoWarn>$(NoWarn);MSB3270</NoWarn>
+        <GodotSharpPath Condition="'$(GodotSharpPath)' == '' and Exists('$(Sts2DataDir)/GodotSharp.dll')">$(Sts2DataDir)/GodotSharp.dll</GodotSharpPath>
+        <GodotSharpPath Condition="'$(GodotSharpPath)' == ''">$(Sts2DataDir)/GodotSharp/Api/Debug/GodotSharp.dll</GodotSharpPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Reference Include="sts2">
+            <HintPath>$(Sts2DataDir)/sts2.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="GodotSharp">
+            <HintPath>$(GodotSharpPath)</HintPath>
+            <Private>false</Private>
+        </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="xunit.v3.assert" Version="3.2.2"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="buildTransitive/TestTheSpire.props"
+              Pack="true"
+              PackagePath="buildTransitive/TestTheSpire.props"/>
+        <None Include="buildTransitive/TestTheSpire.targets"
+              Pack="true"
+              PackagePath="buildTransitive/TestTheSpire.targets"/>
+        <None Include="README.md"
+              Pack="true"
+              PackagePath=""/>
+        <None Include="README.en.md"
+              Pack="true"
+              PackagePath=""/>
+        <None Include="LICENSE"
+              Pack="true"
+              PackagePath=""/>
+    </ItemGroup>
+
+    <Target Name="ValidateGameFolder" BeforeTargets="ResolveReferences">
+        <Error Condition="'$(Sts2DataDir)' == ''" Text="Set Sts2DataDir before building TestTheSpire."/>
+        <Error Condition="!Exists('$(Sts2DataDir)/sts2.dll')" Text="sts2.dll was not found under $(Sts2DataDir)."/>
+        <Error Condition="!Exists('$(GodotSharpPath)')" Text="GodotSharp.dll was not found at $(GodotSharpPath)."/>
+    </Target>
+</Project>
