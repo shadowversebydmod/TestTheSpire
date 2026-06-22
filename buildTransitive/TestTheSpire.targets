@@ -8,8 +8,12 @@
         <Sts2TestAffectsGameplay Condition="'$(Sts2TestAffectsGameplay)' == ''">true</Sts2TestAffectsGameplay>
         <Sts2TestPayloadDir Condition="'$(Sts2TestPayloadDir)' == ''">$(MSBuildProjectDirectory)/mod</Sts2TestPayloadDir>
         <Sts2TestDependencyPayloadRoot Condition="'$(Sts2TestDependencyPayloadRoot)' == ''">$(MSBuildProjectDirectory)/mod-deps</Sts2TestDependencyPayloadRoot>
+        <Sts2DisableOtherMods Condition="'$(Sts2DisableOtherMods)' == ''">false</Sts2DisableOtherMods>
+        <Sts2RequiredModIds Condition="'$(Sts2RequiredModIds)' == ''"></Sts2RequiredModIds>
         <TestTheSpireModId Condition="'$(TestTheSpireModId)' == ''">TestTheSpire</TestTheSpireModId>
+        <TestTheSpireVersion Condition="'$(TestTheSpireVersion)' == ''">0.1.1</TestTheSpireVersion>
         <Sts2XunitAssertModId Condition="'$(Sts2XunitAssertModId)' == ''">xunit.v3.assert</Sts2XunitAssertModId>
+        <Sts2XunitAssertVersion Condition="'$(Sts2XunitAssertVersion)' == ''">3.2.2</Sts2XunitAssertVersion>
         <TestTheSpirePayloadDir Condition="'$(TestTheSpirePayloadDir)' == ''">$(Sts2TestDependencyPayloadRoot)/$(TestTheSpireModId)</TestTheSpirePayloadDir>
         <Sts2XunitAssertPayloadDir Condition="'$(Sts2XunitAssertPayloadDir)' == ''">$(Sts2TestDependencyPayloadRoot)/$(Sts2XunitAssertModId)</Sts2XunitAssertPayloadDir>
         <TestTheSpireManifestPath Condition="'$(TestTheSpireManifestPath)' == ''">$(TestTheSpirePayloadDir)/$(TestTheSpireModId).json</TestTheSpireManifestPath>
@@ -73,9 +77,9 @@
             <_Sts2ManifestLine Include="  &quot;has_pck&quot;: false,"/>
             <_Sts2ManifestLine Include="  &quot;has_dll&quot;: true,"/>
             <_Sts2ManifestLine Include="  &quot;dependencies&quot;: ["/>
-            <_Sts2ManifestLine Include="    &quot;$(TestTheSpireModId)&quot;," Condition="'$(Sts2MainModId)' != ''"/>
-            <_Sts2ManifestLine Include="    &quot;$(TestTheSpireModId)&quot;" Condition="'$(Sts2MainModId)' == ''"/>
-            <_Sts2ManifestLine Include="    &quot;$(Sts2MainModId)&quot;" Condition="'$(Sts2MainModId)' != ''"/>
+            <_Sts2ManifestLine Include="    { &quot;id&quot;: &quot;$(TestTheSpireModId)&quot;, &quot;min_version&quot;: &quot;$(TestTheSpireVersion)&quot; }," Condition="'$(Sts2MainModId)' != ''"/>
+            <_Sts2ManifestLine Include="    { &quot;id&quot;: &quot;$(TestTheSpireModId)&quot;, &quot;min_version&quot;: &quot;$(TestTheSpireVersion)&quot; }" Condition="'$(Sts2MainModId)' == ''"/>
+            <_Sts2ManifestLine Include="    { &quot;id&quot;: &quot;$(Sts2MainModId)&quot;, &quot;min_version&quot;: null }" Condition="'$(Sts2MainModId)' != ''"/>
             <_Sts2ManifestLine Include="  ],"/>
             <_Sts2ManifestLine Include="  &quot;affects_gameplay&quot;: $(Sts2TestAffectsGameplay)"/>
             <_Sts2ManifestLine Include="}"/>
@@ -113,7 +117,7 @@
             <_Sts2XunitAssertManifestLine Include="  &quot;name&quot;: &quot;xUnit v3 Assert&quot;,"/>
             <_Sts2XunitAssertManifestLine Include="  &quot;author&quot;: &quot;xUnit.net&quot;,"/>
             <_Sts2XunitAssertManifestLine Include="  &quot;description&quot;: &quot;Assertion library dependency for STS2 combat tests.&quot;,"/>
-            <_Sts2XunitAssertManifestLine Include="  &quot;version&quot;: &quot;3.2.2&quot;,"/>
+            <_Sts2XunitAssertManifestLine Include="  &quot;version&quot;: &quot;$(Sts2XunitAssertVersion)&quot;,"/>
             <_Sts2XunitAssertManifestLine Include="  &quot;has_pck&quot;: false,"/>
             <_Sts2XunitAssertManifestLine Include="  &quot;has_dll&quot;: true,"/>
             <_Sts2XunitAssertManifestLine Include="  &quot;dependencies&quot;: [],"/>
@@ -125,11 +129,11 @@
             <_TestTheSpireManifestLine Include="  &quot;name&quot;: &quot;TestTheSpire&quot;,"/>
             <_TestTheSpireManifestLine Include="  &quot;author&quot;: &quot;shadowversebydmod group&quot;,"/>
             <_TestTheSpireManifestLine Include="  &quot;description&quot;: &quot;Reusable headless combat test runner for STS2 mods.&quot;,"/>
-            <_TestTheSpireManifestLine Include="  &quot;version&quot;: &quot;0.1.0&quot;,"/>
+            <_TestTheSpireManifestLine Include="  &quot;version&quot;: &quot;$(TestTheSpireVersion)&quot;,"/>
             <_TestTheSpireManifestLine Include="  &quot;has_pck&quot;: false,"/>
             <_TestTheSpireManifestLine Include="  &quot;has_dll&quot;: true,"/>
             <_TestTheSpireManifestLine Include="  &quot;dependencies&quot;: ["/>
-            <_TestTheSpireManifestLine Include="    &quot;$(Sts2XunitAssertModId)&quot;"/>
+            <_TestTheSpireManifestLine Include="    { &quot;id&quot;: &quot;$(Sts2XunitAssertModId)&quot;, &quot;min_version&quot;: &quot;$(Sts2XunitAssertVersion)&quot; }"/>
             <_TestTheSpireManifestLine Include="  ],"/>
             <_TestTheSpireManifestLine Include="  &quot;affects_gameplay&quot;: false"/>
             <_TestTheSpireManifestLine Include="}"/>
@@ -162,13 +166,21 @@
     <Target Name="ConfigureSts2TestSettings" DependsOnTargets="InferSts2TestModProperties">
         <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(Sts2SettingsPath)'))"/>
         <ItemGroup>
+            <_Sts2RequiredModId Include="$(Sts2RequiredModIds)" Condition="'$(Sts2RequiredModIds)' != ''"/>
+            <_Sts2InstalledModManifest Include="$(Sts2ModsDir)/*/*.json" Condition="'$(Sts2DisableOtherMods)' == 'true' and '$(Sts2ModsDir)' != '' and Exists('$(Sts2ModsDir)')"/>
+            <_Sts2DisabledModId Include="%(_Sts2InstalledModManifest.Filename)"
+                                Condition="'$(Sts2DisableOtherMods)' == 'true' and !$([System.String]::Copy(';$(Sts2XunitAssertModId);$(TestTheSpireModId);$(Sts2RequiredModIds);$(Sts2MainModId);$(Sts2TestModId);').Contains(';%(_Sts2InstalledModManifest.Filename);'))"/>
+        </ItemGroup>
+        <ItemGroup>
             <_Sts2SettingsLine Include="{"/>
             <_Sts2SettingsLine Include="  &quot;mod_settings&quot;: {"/>
             <_Sts2SettingsLine Include="    &quot;mods_enabled&quot;: true,"/>
             <_Sts2SettingsLine Include="    &quot;mod_list&quot;: ["/>
             <_Sts2SettingsLine Include="      { &quot;id&quot;: &quot;$(Sts2XunitAssertModId)&quot;, &quot;source&quot;: &quot;mods_directory&quot;, &quot;is_enabled&quot;: true },"/>
             <_Sts2SettingsLine Include="      { &quot;id&quot;: &quot;$(TestTheSpireModId)&quot;, &quot;source&quot;: &quot;mods_directory&quot;, &quot;is_enabled&quot;: true },"/>
+            <_Sts2SettingsLine Include="      { &quot;id&quot;: &quot;%(_Sts2RequiredModId.Identity)&quot;, &quot;source&quot;: &quot;mods_directory&quot;, &quot;is_enabled&quot;: true },"/>
             <_Sts2SettingsLine Include="      { &quot;id&quot;: &quot;$(Sts2MainModId)&quot;, &quot;source&quot;: &quot;mods_directory&quot;, &quot;is_enabled&quot;: true }," Condition="'$(Sts2MainModId)' != ''"/>
+            <_Sts2SettingsLine Include="      { &quot;id&quot;: &quot;%(_Sts2DisabledModId.Identity)&quot;, &quot;source&quot;: &quot;mods_directory&quot;, &quot;is_enabled&quot;: false },"/>
             <_Sts2SettingsLine Include="      { &quot;id&quot;: &quot;$(Sts2TestModId)&quot;, &quot;source&quot;: &quot;mods_directory&quot;, &quot;is_enabled&quot;: true }"/>
             <_Sts2SettingsLine Include="    ]"/>
             <_Sts2SettingsLine Include="  },"/>
@@ -184,6 +196,13 @@
 
     <Target Name="InstallSts2TestDependencyMods" DependsOnTargets="CopySts2TestDependencyMods">
         <Error Condition="'$(Sts2ModsDir)' == ''" Text="Set Sts2ModsDir or Sts2Path before installing STS2 tests."/>
+        <ItemGroup>
+            <_Sts2DependencyModPathConflictingFile Include="$(Sts2ModsDir)/$(Sts2XunitAssertModId)"
+                                                   Condition="Exists('$(Sts2ModsDir)/$(Sts2XunitAssertModId)') and !$([System.IO.Directory]::Exists('$(Sts2ModsDir)/$(Sts2XunitAssertModId)'))"/>
+            <_Sts2DependencyModPathConflictingFile Include="$(Sts2ModsDir)/$(TestTheSpireModId)"
+                                                   Condition="Exists('$(Sts2ModsDir)/$(TestTheSpireModId)') and !$([System.IO.Directory]::Exists('$(Sts2ModsDir)/$(TestTheSpireModId)'))"/>
+        </ItemGroup>
+        <Delete Files="@(_Sts2DependencyModPathConflictingFile)"/>
         <MakeDir Directories="$(Sts2ModsDir)/$(Sts2XunitAssertModId);$(Sts2ModsDir)/$(TestTheSpireModId)"/>
         <ItemGroup>
             <_Sts2XunitAssertInstallPayload Include="$(Sts2XunitAssertPayloadDir)/**"/>
@@ -199,6 +218,11 @@
 
     <Target Name="InstallSts2TestMod" DependsOnTargets="ValidateSts2TestPaths;InstallSts2TestDependencyMods;CopySts2TestPayload;ConfigureSts2TestSettings">
         <Error Condition="'$(Sts2ModsDir)' == ''" Text="Set Sts2ModsDir or Sts2Path before installing STS2 tests."/>
+        <ItemGroup>
+            <_Sts2TestModPathConflictingFile Include="$(Sts2ModsDir)/$(Sts2TestModId)"
+                                             Condition="Exists('$(Sts2ModsDir)/$(Sts2TestModId)') and !$([System.IO.Directory]::Exists('$(Sts2ModsDir)/$(Sts2TestModId)'))"/>
+        </ItemGroup>
+        <Delete Files="@(_Sts2TestModPathConflictingFile)"/>
         <MakeDir Directories="$(Sts2ModsDir)/$(Sts2TestModId)"/>
         <Copy SourceFiles="@(Sts2TestPayload)"
               DestinationFolder="$(Sts2ModsDir)/$(Sts2TestModId)"

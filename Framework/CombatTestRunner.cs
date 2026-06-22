@@ -237,7 +237,8 @@ internal sealed class CombatTestRunner
                 var actualChecksum = actual.Checksums[i];
                 if (expectedChecksum.Id != actualChecksum.Id
                     || NormalizeChecksumContext(expectedChecksum.Context) != NormalizeChecksumContext(actualChecksum.Context)
-                    || expectedChecksum.Checksum != actualChecksum.Checksum)
+                    || (!testCase.CompareNetworkChecksumContextsOnly
+                        && expectedChecksum.Checksum != actualChecksum.Checksum))
                     return BuildChecksumMismatchMessage(testCase, expected, actual, i);
             }
         }
@@ -409,7 +410,8 @@ internal sealed class CombatTestRunner
             Array.Empty<object?>(),
             skipReason,
             localNetIds,
-            attribute.ExpectMismatch);
+            attribute.ExpectMismatch,
+            attribute.CompareContextsOnly);
     }
 
     private static string BuildDisplayName(
@@ -504,7 +506,8 @@ internal sealed class CombatTestRunner
         object?[] Arguments,
         string? SkipReason,
         IReadOnlyList<ulong> NetworkLocalNetIds,
-        bool ExpectNetworkChecksumMismatch = false);
+        bool ExpectNetworkChecksumMismatch = false,
+        bool CompareNetworkChecksumContextsOnly = false);
 
     private sealed record NetworkChecksumCapture(
         ulong LocalNetId,

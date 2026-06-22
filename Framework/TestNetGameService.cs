@@ -49,6 +49,8 @@ internal sealed class TestNetGameService(ulong netId, NetGameType type = NetGame
         _isGameLoading = isLoading;
     }
 
+    public void SetBufferMessages(bool bufferMessages) { }
+
     public string? GetRawLobbyIdentifier()
     {
         return null;
