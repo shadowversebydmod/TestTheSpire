@@ -113,8 +113,7 @@ public static class CombatTestBootstrap
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            var currentProcess = WindowsGetCurrentProcess();
-            if (!WindowsTerminateProcess(currentProcess, (uint)status))
+            if (!TerminateProcess(GetCurrentProcess(), (uint)status))
                 throw new InvalidOperationException("TerminateProcess failed.");
         }
         else
@@ -125,15 +124,15 @@ public static class CombatTestBootstrap
         throw new InvalidOperationException("Immediate process exit returned unexpectedly.");
     }
 
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern IntPtr GetCurrentProcess();
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool TerminateProcess(IntPtr hProcess, uint uExitCode);
+
     [DllImport("libc", EntryPoint = "_exit")]
     private static extern void PosixExit(int status);
-
-    [DllImport("kernel32.dll", EntryPoint = "GetCurrentProcess")]
-    private static extern nint WindowsGetCurrentProcess();
-
-    [DllImport("kernel32.dll", EntryPoint = "TerminateProcess")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool WindowsTerminateProcess(nint process, uint exitCode);
 
     private static void InstallLocalAssemblyResolver()
     {

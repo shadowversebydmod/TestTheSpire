@@ -10,7 +10,7 @@
         <RootNamespace>TestTheSpire</RootNamespace>
         <IsPackable>true</IsPackable>
         <PackageId>TestTheSpire</PackageId>
-        <Version>0.1.1</Version>
+        <Version>0.1.3</Version>
         <Authors>shadowversebydmod group</Authors>
         <Company>shadowversebydmod group</Company>
         <Description>Headless combat test framework for Slay the Spire 2 mods.</Description>

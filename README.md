@@ -143,6 +143,8 @@ dotnet msbuild YourMod.Tests/YourMod.Tests.csproj \
 - `ListSts2Tests`：启动 headless STS2，打印发现到的 xUnit facts。
 - `RunSts2Tests`：启动 headless STS2，执行匹配到的测试。
 
+`ListSts2Tests` 和 `RunSts2Tests` 会把 STS2 的完整 stdout/stderr 写到 `Sts2TestLogDir` 下的 `list.log` 或 `run.log`。默认目录是 `/tmp/sts2-combat-tests/<test-mod-id>/logs`，MSBuild stdout 只回放测试开始 marker 之后的输出；启动阶段噪声需要看完整日志。
+
 默认 settings 写到 `/tmp/sts2-combat-tests/<test-mod-id>`。CI 里多条 job 同时跑测试时，用 `Sts2TestXdgDataHome` 隔离 profile 和 settings：
 
 ```bash

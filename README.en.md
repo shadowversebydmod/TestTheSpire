@@ -143,6 +143,8 @@ Useful targets:
 - `ListSts2Tests`: starts STS2 headless and prints discovered xUnit facts.
 - `RunSts2Tests`: starts STS2 headless and executes matching tests.
 
+`ListSts2Tests` and `RunSts2Tests` write the full STS2 stdout/stderr stream to `list.log` or `run.log` under `Sts2TestLogDir`. The default directory is `/tmp/sts2-combat-tests/<test-mod-id>/logs`; MSBuild stdout only replays output after the test-start marker, so inspect the full log for startup noise.
+
 The default settings path is isolated under `/tmp/sts2-combat-tests/<test-mod-id>`. CI jobs can keep profiles and settings separate by setting `Sts2TestXdgDataHome`:
 
 ```bash

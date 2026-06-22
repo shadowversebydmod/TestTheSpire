@@ -22,6 +22,9 @@ internal sealed class CombatTestRunner
     public async Task<CombatTestRunSummary> RunAsync(Assembly assembly, string? nameFilter, bool listOnly)
     {
         var testCases = DiscoverTests(assembly, nameFilter);
+        Log.Info(
+            $"[{CombatTestBootstrap.LogPrefix}] START mode={(listOnly ? "list" : "run")} total={testCases.Count}{FormatFilter(nameFilter)}");
+
         if (listOnly)
         {
             foreach (var testCase in testCases) Log.Info($"[{CombatTestBootstrap.LogPrefix}] {testCase.DisplayName}");
@@ -47,6 +50,11 @@ internal sealed class CombatTestRunner
         }
 
         return CombatTestRunSummary.FromResults(results);
+    }
+
+    private static string FormatFilter(string? nameFilter)
+    {
+        return string.IsNullOrWhiteSpace(nameFilter) ? string.Empty : $" filter=\"{nameFilter}\"";
     }
 
     private async Task<TestResult> RunSingleAsync(DiscoveredTestCase testCase)
