@@ -60,10 +60,13 @@ public static class CombatTestBootstrap
 
             await StartAsync(NGame.Instance ?? throw new InvalidOperationException("NGame was not available."));
         }
+        catch (WindowsExitScheduledException) when (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+        }
         catch (Exception ex)
         {
             Log.Error($"[{LogPrefix}] Bootstrap FAIL\n{ex}");
-            ImmediateExit(1);
+            ExitAfterFailure();
         }
     }
 
@@ -93,10 +96,14 @@ public static class CombatTestBootstrap
 
             ImmediateExit(summary.Failed == 0 ? 0 : 1);
         }
+        catch (WindowsExitScheduledException) when (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             Log.Error($"[{LogPrefix}] FAIL\n{ex}");
-            ImmediateExit(1);
+            ExitAfterFailure();
         }
     }
 
@@ -110,12 +117,17 @@ public static class CombatTestBootstrap
     {
         Console.Out.Flush();
         Console.Error.Flush();
+        WriteExitStatus(status);
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            var currentProcess = WindowsGetCurrentProcess();
-            if (!WindowsTerminateProcess(currentProcess, (uint)status))
-                throw new InvalidOperationException("TerminateProcess failed.");
+            if (Engine.GetMainLoop() is SceneTree tree)
+            {
+                tree.Quit(status);
+                throw new WindowsExitScheduledException();
+            }
+
+            System.Environment.Exit(status);
         }
         else
         {
@@ -125,15 +137,39 @@ public static class CombatTestBootstrap
         throw new InvalidOperationException("Immediate process exit returned unexpectedly.");
     }
 
+    private static void WriteExitStatus(int status)
+    {
+        var resultPath = System.Environment.GetEnvironmentVariable("STS2_TEST_RESULT_PATH");
+        if (string.IsNullOrWhiteSpace(resultPath)) return;
+
+        try
+        {
+            var resultDirectory = Path.GetDirectoryName(resultPath);
+            if (!string.IsNullOrWhiteSpace(resultDirectory)) Directory.CreateDirectory(resultDirectory);
+
+            File.WriteAllText(resultPath, status.ToString());
+        }
+        catch (Exception ex)
+        {
+            Log.Warn($"[{LogPrefix}] Could not write test result status to {resultPath}: {ex}");
+        }
+    }
+
     [DllImport("libc", EntryPoint = "_exit")]
     private static extern void PosixExit(int status);
 
-    [DllImport("kernel32.dll", EntryPoint = "GetCurrentProcess")]
-    private static extern nint WindowsGetCurrentProcess();
+    private static void ExitAfterFailure()
+    {
+        try
+        {
+            ImmediateExit(1);
+        }
+        catch (WindowsExitScheduledException) when (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+        }
+    }
 
-    [DllImport("kernel32.dll", EntryPoint = "TerminateProcess")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool WindowsTerminateProcess(nint process, uint exitCode);
+    private sealed class WindowsExitScheduledException : Exception;
 
     private static void InstallLocalAssemblyResolver()
     {

@@ -7,6 +7,7 @@ using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions;
+using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Logging;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Multiplayer;
@@ -105,7 +106,7 @@ public sealed class CombatTestContext
             showTransition: false);
 
         await WaitForStatic(
-            () => CombatManager.Instance.IsInProgress && CombatManager.Instance.IsPlayPhase,
+            () => CombatManager.Instance.IsInProgress && CombatManager.Instance.IsPartOfPlayerTurn(player),
             "Combat play phase did not begin.");
 
         game.SetScreenShakeTarget(game.RootSceneContainer);
@@ -179,7 +180,7 @@ public sealed class CombatTestContext
     public async Task<TCard> AddToHand<TCard>(Player owner) where TCard : CardModel
     {
         var card = CombatState.CreateCard<TCard>(owner);
-        await CardPileCmd.AddGeneratedCardToCombat(card, PileType.Hand, true);
+        await CardPileCmd.AddGeneratedCardToCombat(card, PileType.Hand, owner, CardPilePosition.Bottom);
         await WaitFor(
             () => PileType.Hand.GetPile(owner).Cards.Contains(card),
             $"Injected {typeof(TCard).Name} did not appear in hand.");
@@ -218,7 +219,7 @@ public sealed class CombatTestContext
             throw new InvalidOperationException("Cannot end the player turn while it is not the player's turn.");
 
         var currentRound = CombatState.RoundNumber;
-        PlayerCmd.EndTurn(Player, false);
+        PlayerCmd.EndTurn(Player, false, () => Task.CompletedTask);
 
         await WaitFor(
             () => CombatState.CurrentSide == CombatSide.Player && CombatState.RoundNumber > currentRound,
@@ -235,9 +236,10 @@ public sealed class CombatTestContext
         where TPower : PowerModel
     {
         var power = await PowerCmd.Apply<TPower>(
+            new ThrowingPlayerChoiceContext(),
             target,
             amount,
-            applier,
+            applier ?? target,
             cardSource,
             true);
         await WaitForIdle();
