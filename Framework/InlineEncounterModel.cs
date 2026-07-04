@@ -10,8 +10,6 @@ public sealed class InlineEncounterModel : EncounterModel
 
     public override RoomType RoomType => _roomType;
 
-    public override bool IsDebugEncounter => true;
-
     public override IEnumerable<MonsterModel> AllPossibleMonsters
         => _monsterFactories.Select(static factory => factory.Canonical);
 

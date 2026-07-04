@@ -62,7 +62,7 @@ PassingSummaryLines = passingSummaries.ToArray();
         <Sts2DisableOtherMods Condition="'$(Sts2DisableOtherMods)' == ''">false</Sts2DisableOtherMods>
         <Sts2RequiredModIds Condition="'$(Sts2RequiredModIds)' == ''"></Sts2RequiredModIds>
         <TestTheSpireModId Condition="'$(TestTheSpireModId)' == ''">TestTheSpire</TestTheSpireModId>
-        <TestTheSpireVersion Condition="'$(TestTheSpireVersion)' == ''">0.1.3</TestTheSpireVersion>
+        <TestTheSpireVersion Condition="'$(TestTheSpireVersion)' == ''">0.1.4</TestTheSpireVersion>
         <Sts2XunitAssertModId Condition="'$(Sts2XunitAssertModId)' == ''">xunit.v3.assert</Sts2XunitAssertModId>
         <Sts2XunitAssertVersion Condition="'$(Sts2XunitAssertVersion)' == ''">3.2.2</Sts2XunitAssertVersion>
         <TestTheSpirePayloadDir Condition="'$(TestTheSpirePayloadDir)' == ''">$(Sts2TestDependencyPayloadRoot)/$(TestTheSpireModId)</TestTheSpirePayloadDir>
