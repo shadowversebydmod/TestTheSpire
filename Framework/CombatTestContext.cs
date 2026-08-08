@@ -22,6 +22,9 @@ namespace TestTheSpire;
 public sealed class CombatTestContext
 {
     private static readonly TimeSpan WaitTimeout = TimeSpan.FromSeconds(30);
+    private static readonly FieldInfo? CombatStateChangedField = typeof(CombatStateTracker).GetField(
+        nameof(CombatStateTracker.CombatStateChanged),
+        BindingFlags.Instance | BindingFlags.NonPublic);
     private readonly NGame _game;
     private Action<GameAction>? _trackChecksumActionStart;
     private Action<GameAction>? _generateMissingPostActionChecksum;
@@ -315,6 +318,8 @@ public sealed class CombatTestContext
 
     private static async Task ResetEnvironmentAsync(NGame game)
     {
+        RemoveBackendIncompatibleCombatStateSubscribers();
+
         if (RunManager.Instance.DebugOnlyGetState() != null)
             try
             {
@@ -336,6 +341,19 @@ public sealed class CombatTestContext
 
         await NextFrame();
         await NextFrame();
+    }
+
+    private static void RemoveBackendIncompatibleCombatStateSubscribers()
+    {
+        if (!TestMode.IsOn || CombatStateChangedField == null) return;
+
+        var tracker = CombatManager.Instance.StateTracker;
+        if (CombatStateChangedField.GetValue(tracker) is not Delegate subscribers) return;
+
+        CombatStateChangedField.SetValue(tracker, null);
+        Log.Warn(
+            $"[{CombatTestBootstrap.LogPrefix}] Removed {subscribers.GetInvocationList().Length} " +
+            "CombatStateChanged subscriber(s) that are invalid while STS2 TestMode is active.");
     }
 
     private static async Task WaitForStatic(Func<bool> condition, string timeoutMessage)

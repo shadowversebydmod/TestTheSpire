@@ -56,13 +56,14 @@ PassingSummaryLines = passingSummaries.ToArray();
         <Sts2TestModName Condition="'$(Sts2TestModName)' == ''">$(MSBuildProjectName)</Sts2TestModName>
         <Sts2TestModAuthor Condition="'$(Sts2TestModAuthor)' == ''">shadowversebydmod group</Sts2TestModAuthor>
         <Sts2TestModVersion Condition="'$(Sts2TestModVersion)' == ''">0.1.0</Sts2TestModVersion>
+        <Sts2TestMinGameVersion Condition="'$(Sts2TestMinGameVersion)' == ''">0.110.1</Sts2TestMinGameVersion>
         <Sts2TestAffectsGameplay Condition="'$(Sts2TestAffectsGameplay)' == ''">true</Sts2TestAffectsGameplay>
         <Sts2TestPayloadDir Condition="'$(Sts2TestPayloadDir)' == ''">$(MSBuildProjectDirectory)/mod</Sts2TestPayloadDir>
         <Sts2TestDependencyPayloadRoot Condition="'$(Sts2TestDependencyPayloadRoot)' == ''">$(MSBuildProjectDirectory)/mod-deps</Sts2TestDependencyPayloadRoot>
         <Sts2DisableOtherMods Condition="'$(Sts2DisableOtherMods)' == ''">false</Sts2DisableOtherMods>
         <Sts2RequiredModIds Condition="'$(Sts2RequiredModIds)' == ''"></Sts2RequiredModIds>
         <TestTheSpireModId Condition="'$(TestTheSpireModId)' == ''">TestTheSpire</TestTheSpireModId>
-        <TestTheSpireVersion Condition="'$(TestTheSpireVersion)' == ''">0.1.4</TestTheSpireVersion>
+        <TestTheSpireVersion Condition="'$(TestTheSpireVersion)' == ''">0.1.5</TestTheSpireVersion>
         <Sts2XunitAssertModId Condition="'$(Sts2XunitAssertModId)' == ''">xunit.v3.assert</Sts2XunitAssertModId>
         <Sts2XunitAssertVersion Condition="'$(Sts2XunitAssertVersion)' == ''">3.2.2</Sts2XunitAssertVersion>
         <TestTheSpirePayloadDir Condition="'$(TestTheSpirePayloadDir)' == ''">$(Sts2TestDependencyPayloadRoot)/$(TestTheSpireModId)</TestTheSpirePayloadDir>
@@ -130,6 +131,7 @@ PassingSummaryLines = passingSummaries.ToArray();
             <_Sts2ManifestLine Include="  &quot;author&quot;: &quot;$(Sts2TestModAuthor)&quot;,"/>
             <_Sts2ManifestLine Include="  &quot;description&quot;: &quot;$(Sts2TestModDescription)&quot;,"/>
             <_Sts2ManifestLine Include="  &quot;version&quot;: &quot;$(Sts2TestModVersion)&quot;,"/>
+            <_Sts2ManifestLine Include="  &quot;min_game_version&quot;: &quot;$(Sts2TestMinGameVersion)&quot;,"/>
             <_Sts2ManifestLine Include="  &quot;has_pck&quot;: false,"/>
             <_Sts2ManifestLine Include="  &quot;has_dll&quot;: true,"/>
             <_Sts2ManifestLine Include="  &quot;dependencies&quot;: ["/>
@@ -174,6 +176,7 @@ PassingSummaryLines = passingSummaries.ToArray();
             <_Sts2XunitAssertManifestLine Include="  &quot;author&quot;: &quot;xUnit.net&quot;,"/>
             <_Sts2XunitAssertManifestLine Include="  &quot;description&quot;: &quot;Assertion library dependency for STS2 combat tests.&quot;,"/>
             <_Sts2XunitAssertManifestLine Include="  &quot;version&quot;: &quot;$(Sts2XunitAssertVersion)&quot;,"/>
+            <_Sts2XunitAssertManifestLine Include="  &quot;min_game_version&quot;: &quot;$(Sts2TestMinGameVersion)&quot;,"/>
             <_Sts2XunitAssertManifestLine Include="  &quot;has_pck&quot;: false,"/>
             <_Sts2XunitAssertManifestLine Include="  &quot;has_dll&quot;: true,"/>
             <_Sts2XunitAssertManifestLine Include="  &quot;dependencies&quot;: [],"/>
@@ -186,6 +189,7 @@ PassingSummaryLines = passingSummaries.ToArray();
             <_TestTheSpireManifestLine Include="  &quot;author&quot;: &quot;shadowversebydmod group&quot;,"/>
             <_TestTheSpireManifestLine Include="  &quot;description&quot;: &quot;Reusable headless combat test runner for STS2 mods.&quot;,"/>
             <_TestTheSpireManifestLine Include="  &quot;version&quot;: &quot;$(TestTheSpireVersion)&quot;,"/>
+            <_TestTheSpireManifestLine Include="  &quot;min_game_version&quot;: &quot;$(Sts2TestMinGameVersion)&quot;,"/>
             <_TestTheSpireManifestLine Include="  &quot;has_pck&quot;: false,"/>
             <_TestTheSpireManifestLine Include="  &quot;has_dll&quot;: true,"/>
             <_TestTheSpireManifestLine Include="  &quot;dependencies&quot;: ["/>
