@@ -7,6 +7,17 @@ namespace TestTheSpire;
 
 public static class ModelHookCompatExtensions
 {
+    public static Task BeforeTurnEnd(
+        this AbstractModel model,
+        PlayerChoiceContext choiceContext,
+        CombatSide side)
+    {
+        var participants = model is PowerModel { Owner.CombatState: { } combatState }
+            ? combatState.GetCreaturesOnSide(side)
+            : Array.Empty<Creature>();
+        return model.BeforeSideTurnEnd(choiceContext, side, participants);
+    }
+
     public static Task AfterTurnEnd(
         this AbstractModel model,
         PlayerChoiceContext choiceContext,

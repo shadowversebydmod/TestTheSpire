@@ -1,6 +1,6 @@
 # TestTheSpire
 
-[![NuGet](https://img.shields.io/nuget/v/TestTheSpire.svg)](https://www.nuget.org/packages/TestTheSpire/0.1.5)
+[![NuGet](https://img.shields.io/nuget/v/TestTheSpire.svg)](https://www.nuget.org/packages/TestTheSpire/0.1.6)
 
 TestTheSpire is a testing framework for Slay the Spire 2. It lets STS2 mod tests run from a plain command-line environment, without starting the game through Steam. In an AI-assisted development workflow, the same loop can write code, run tests, and bring the result back for review. Long card implementation runs become easier to keep reliable because failures point to a concrete combat test instead of a manual launch step.
 
@@ -21,7 +21,7 @@ This project depends on a local STS2 install. The build references `sts2.dll` an
 Create a separate test project, for example `YourMod.Tests/YourMod.Tests.csproj`. The test project usually references the mod project and the TestTheSpire package:
 
 ```bash
-dotnet add YourMod.Tests/YourMod.Tests.csproj package TestTheSpire --version 0.1.5
+dotnet add YourMod.Tests/YourMod.Tests.csproj package TestTheSpire --version 0.1.6
 ```
 
 A minimal project file can look like this:
@@ -36,7 +36,7 @@ A minimal project file can look like this:
 
   <ItemGroup>
     <ProjectReference Include="../yourmod.csproj" />
-    <PackageReference Include="TestTheSpire" Version="0.1.5" />
+    <PackageReference Include="TestTheSpire" Version="0.1.6" />
   </ItemGroup>
 </Project>
 ```
@@ -72,6 +72,16 @@ public static class Entry
 }
 ```
 
+By default, a test that executes no combat `GameAction` fails immediately because it may crash STS2 headless cleanup. Tests that only inspect models or resources can opt into a cleanup no-op; TestTheSpire then enqueues a local-runner-only action before teardown:
+
+```csharp
+CombatTestBootstrap.Initialize(Assembly.GetExecutingAssembly(), new CombatTestOptions
+{
+    LogPrefix = "yourmod.Tests",
+    ZeroActionBehavior = ZeroActionTestBehavior.EnqueueCleanupNoOp
+});
+```
+
 If the project keeps a static manifest, put `TestTheSpire` before the tested mod. The STS2 loader will load `xunit.v3.assert`, `TestTheSpire`, the tested mod, and then the test mod:
 
 ```json
@@ -80,12 +90,12 @@ If the project keeps a static manifest, put `TestTheSpire` before the tested mod
   "name": "yourmod.Tests",
   "author": "your team",
   "description": "Headless combat tests for yourmod.",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "min_game_version": "0.110.1",
   "has_pck": false,
   "has_dll": true,
   "dependencies": [
-    { "id": "TestTheSpire", "min_version": "0.1.5" },
+    { "id": "TestTheSpire", "min_version": "0.1.6" },
     { "id": "yourmod", "min_version": null }
   ],
   "affects_gameplay": true
@@ -195,6 +205,8 @@ public sealed class StrikeTests : CombatTestSuite
 
 Mod card tests follow the same path: prepare the battle, inject the target card, record enemy HP, player block, or pile counts, play the card, wait for the action queue to clear, and assert the exact state change.
 
+`CardTestAssertions` also provides `PowerAmount<TPower>`, `AssertPowerAmount<TPower>`, `AssertCurrentPortraitPathsExist`, and `ProjectFileExists`. Resource checks prefer Godot's `ResourceLoader`; the latter two methods also accept an explicit project directory for test assets that have not been packed into a PCK. `ModelHookCompatExtensions` provides compatibility calls from the legacy `BeforeTurnEnd` and `AfterTurnEnd` names to the current side-turn hooks.
+
 ## Maintain TestTheSpire
 
 This section is for framework maintainers and NuGet publishers.
@@ -220,13 +232,13 @@ dotnet pack TestTheSpire.csproj -c Release
 The NuGet package is written to:
 
 ```text
-artifacts/packages/TestTheSpire.0.1.5.nupkg
+artifacts/packages/TestTheSpire.0.1.6.nupkg
 ```
 
 For nuget.org:
 
 ```bash
-dotnet nuget push artifacts/packages/TestTheSpire.0.1.5.nupkg \
+dotnet nuget push artifacts/packages/TestTheSpire.0.1.6.nupkg \
   --api-key "$NUGET_API_KEY" \
   --source https://api.nuget.org/v3/index.json \
   --skip-duplicate

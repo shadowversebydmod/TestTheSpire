@@ -1,6 +1,6 @@
 # TestTheSpire
 
-[![NuGet](https://img.shields.io/nuget/v/TestTheSpire.svg)](https://www.nuget.org/packages/TestTheSpire/0.1.5)
+[![NuGet](https://img.shields.io/nuget/v/TestTheSpire.svg)](https://www.nuget.org/packages/TestTheSpire/0.1.6)
 
 TestTheSpire 是一个用于 Slay the Spire 2 的测试框架。利用这个框架，可以在纯命令行环境下，不通过 steam 启动游戏直接进行测试。这使得通过 AI 完成完整的 代码编写->测试->Review 回环成为可能，从而提升 AI 代码编写的效率与可靠性，使得长时间执行卡牌编写任务成为可能。
 
@@ -21,7 +21,7 @@ English Readme: [README.en.md](README.en.md)。
 先准备一个独立的测试项目，例如 `YourMod.Tests/YourMod.Tests.csproj`。测试项目通常引用被测 mod 项目，再通过 NuGet 引入 TestTheSpire：
 
 ```bash
-dotnet add YourMod.Tests/YourMod.Tests.csproj package TestTheSpire --version 0.1.5
+dotnet add YourMod.Tests/YourMod.Tests.csproj package TestTheSpire --version 0.1.6
 ```
 
 一个最小项目文件可以这样写：
@@ -36,7 +36,7 @@ dotnet add YourMod.Tests/YourMod.Tests.csproj package TestTheSpire --version 0.1
 
   <ItemGroup>
     <ProjectReference Include="../yourmod.csproj" />
-    <PackageReference Include="TestTheSpire" Version="0.1.5" />
+    <PackageReference Include="TestTheSpire" Version="0.1.6" />
   </ItemGroup>
 </Project>
 ```
@@ -72,6 +72,16 @@ public static class Entry
 }
 ```
 
+默认情况下，没有执行任何战斗 `GameAction` 的测试会立即失败，因为这种测试可能令 STS2 的 headless 清理流程崩溃。只进行模型或资源断言的测试可以启用清理 No-op；TestTheSpire 会在测试结束时自动插入一个仅供本地 runner 使用的动作：
+
+```csharp
+CombatTestBootstrap.Initialize(Assembly.GetExecutingAssembly(), new CombatTestOptions
+{
+    LogPrefix = "yourmod.Tests",
+    ZeroActionBehavior = ZeroActionTestBehavior.EnqueueCleanupNoOp
+});
+```
+
 项目保留静态 manifest 时，把 `TestTheSpire` 放在被测 mod 之前。STS2 loader 会按依赖顺序加载 `xunit.v3.assert`、`TestTheSpire`、被测 mod、测试 mod：
 
 ```json
@@ -80,12 +90,12 @@ public static class Entry
   "name": "yourmod.Tests",
   "author": "your team",
   "description": "Headless combat tests for yourmod.",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "min_game_version": "0.110.1",
   "has_pck": false,
   "has_dll": true,
   "dependencies": [
-    { "id": "TestTheSpire", "min_version": "0.1.5" },
+    { "id": "TestTheSpire", "min_version": "0.1.6" },
     { "id": "yourmod", "min_version": null }
   ],
   "affects_gameplay": true
@@ -195,6 +205,8 @@ public sealed class StrikeTests : CombatTestSuite
 
 mod 卡牌测试沿用同一条路径：准备战斗，注入目标卡牌，记录敌人 HP、玩家格挡或牌堆数量，打出卡牌，等待 action queue 清空后断言状态变化。这样失败日志会落在具体战斗状态上，开发者可以直接回到卡牌实现或 hook 里修正。
 
+`CardTestAssertions` 还提供 `PowerAmount<TPower>`、`AssertPowerAmount<TPower>`、`AssertCurrentPortraitPathsExist` 和 `ProjectFileExists`。资源路径检查会优先使用 Godot `ResourceLoader`；也可以给后两个方法传入显式项目目录，适配尚未打进 PCK 的测试资源。`ModelHookCompatExtensions` 同时提供从旧式 `BeforeTurnEnd`、`AfterTurnEnd` 到当前 side-turn hook 的兼容调用。
+
 ## 维护 TestTheSpire
 
 这一节面向维护框架和发布 NuGet 包的人。
@@ -220,13 +232,13 @@ dotnet pack TestTheSpire.csproj -c Release
 NuGet 包会生成到：
 
 ```text
-artifacts/packages/TestTheSpire.0.1.5.nupkg
+artifacts/packages/TestTheSpire.0.1.6.nupkg
 ```
 
 发布到 nuget.org：
 
 ```bash
-dotnet nuget push artifacts/packages/TestTheSpire.0.1.5.nupkg \
+dotnet nuget push artifacts/packages/TestTheSpire.0.1.6.nupkg \
   --api-key "$NUGET_API_KEY" \
   --source https://api.nuget.org/v3/index.json \
   --skip-duplicate

@@ -11,6 +11,12 @@ using MegaCrit.Sts2.Core.TestSupport;
 
 namespace TestTheSpire;
 
+public enum ZeroActionTestBehavior
+{
+    FailFast,
+    EnqueueCleanupNoOp
+}
+
 public sealed class CombatTestOptions
 {
     public string LogPrefix { get; init; } = "TestTheSpire";
@@ -18,6 +24,8 @@ public sealed class CombatTestOptions
     public string PrimaryArg { get; init; } = "sts2-test";
 
     public string? LegacyArg { get; init; } = "sts2-test-demo";
+
+    public ZeroActionTestBehavior ZeroActionBehavior { get; init; } = ZeroActionTestBehavior.FailFast;
 }
 
 public static class CombatTestBootstrap
@@ -29,6 +37,8 @@ public static class CombatTestBootstrap
     private static bool _started;
 
     internal static string LogPrefix => _options.LogPrefix;
+
+    internal static ZeroActionTestBehavior ZeroActionBehavior => _options.ZeroActionBehavior;
 
     public static bool Enabled
         => CommandLineHelper.HasArg(_options.PrimaryArg)

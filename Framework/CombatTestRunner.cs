@@ -91,6 +91,7 @@ internal sealed class CombatTestRunner
         CombatTestSuite? suite = null;
         var suiteDisposed = false;
         var contextReset = false;
+        var zeroActionHandled = false;
         Action<NetChecksumData, string, NetFullCombatState>? recordChecksum = null;
         List<RecordedChecksum> checksums = new();
 
@@ -121,7 +122,8 @@ internal sealed class CombatTestRunner
                     RunManager.Instance.ChecksumTracker.ChecksumGenerated -= recordChecksum;
             }
 
-            EnsureCombatActionWasExecuted(testCase, context);
+            zeroActionHandled = true;
+            await EnsureCombatActionWasExecutedAsync(testCase, context);
             context.EndActionExecutionTracking();
 
             await suite.DisposeInternalAsync();
@@ -134,8 +136,16 @@ internal sealed class CombatTestRunner
         catch (Exception ex)
         {
             var actual = Unwrap(ex);
-            if (context?.ExecutedActionCount == 0)
-                TerminateZeroActionTest(testCase, actual);
+            if (!zeroActionHandled && context?.ExecutedActionCount == 0)
+                try
+                {
+                    zeroActionHandled = true;
+                    await EnsureCombatActionWasExecutedAsync(testCase, context, actual);
+                }
+                catch (Exception cleanupPreparationEx)
+                {
+                    actual = new AggregateException(actual, Unwrap(cleanupPreparationEx));
+                }
 
             try
             {
@@ -167,13 +177,20 @@ internal sealed class CombatTestRunner
         }
     }
 
-    private static void EnsureCombatActionWasExecuted(
+    private static async Task EnsureCombatActionWasExecutedAsync(
         DiscoveredTestCase testCase,
-        CombatTestContext context)
+        CombatTestContext context,
+        Exception? originalError = null)
     {
         if (context.ExecutedActionCount > 0) return;
 
-        TerminateZeroActionTest(testCase, null);
+        if (CombatTestBootstrap.ZeroActionBehavior == ZeroActionTestBehavior.EnqueueCleanupNoOp)
+        {
+            await context.EnsureActionExecutedForCleanupAsync(testCase.DisplayName);
+            return;
+        }
+
+        TerminateZeroActionTest(testCase, originalError);
     }
 
     private static void TerminateZeroActionTest(

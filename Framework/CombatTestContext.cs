@@ -5,6 +5,7 @@ using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Entities.Multiplayer;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
@@ -216,6 +217,16 @@ public sealed class CombatTestContext
         await WaitForIdle();
     }
 
+    public async Task EnsureActionExecutedForCleanupAsync(string displayName)
+    {
+        if (ExecutedActionCount > 0) return;
+
+        Log.Info(
+            $"[{CombatTestBootstrap.LogPrefix}] {displayName} completed without a GameAction; " +
+            "enqueueing cleanup no-op action.");
+        await EnqueueNetworkAction(new CombatTestNoOpAction(Player.NetId));
+    }
+
     public async Task EndPlayerTurn()
     {
         if (CombatState.CurrentSide != CombatSide.Player)
@@ -371,5 +382,33 @@ public sealed class CombatTestContext
     {
         var tree = (SceneTree)Engine.GetMainLoop();
         await tree.ToSignal(tree, SceneTree.SignalName.ProcessFrame);
+    }
+
+    private sealed class CombatTestNoOpAction : GameAction
+    {
+        public CombatTestNoOpAction(ulong ownerId)
+        {
+            OwnerId = ownerId;
+        }
+
+        public override ulong OwnerId { get; }
+
+        public override GameActionType ActionType => GameActionType.Any;
+
+        protected override Task ExecuteAction()
+        {
+            return Task.CompletedTask;
+        }
+
+        public override INetAction ToNetAction()
+        {
+            throw new NotSupportedException(
+                $"{nameof(CombatTestNoOpAction)} is only used inside the local test runner.");
+        }
+
+        public override string ToString()
+        {
+            return $"{nameof(CombatTestNoOpAction)} owner {OwnerId}";
+        }
     }
 }
