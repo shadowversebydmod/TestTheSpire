@@ -1,6 +1,6 @@
 # TestTheSpire
 
-[![NuGet](https://img.shields.io/nuget/v/TestTheSpire.svg)](https://www.nuget.org/packages/TestTheSpire/0.1.6)
+[![NuGet](https://img.shields.io/nuget/v/TestTheSpire.svg)](https://www.nuget.org/packages/TestTheSpire/0.1.7)
 
 TestTheSpire 是一个用于 Slay the Spire 2 的测试框架。利用这个框架，可以在纯命令行环境下，不通过 steam 启动游戏直接进行测试。这使得通过 AI 完成完整的 代码编写->测试->Review 回环成为可能，从而提升 AI 代码编写的效率与可靠性，使得长时间执行卡牌编写任务成为可能。
 
@@ -21,7 +21,7 @@ English Readme: [README.en.md](README.en.md)。
 先准备一个独立的测试项目，例如 `YourMod.Tests/YourMod.Tests.csproj`。测试项目通常引用被测 mod 项目，再通过 NuGet 引入 TestTheSpire：
 
 ```bash
-dotnet add YourMod.Tests/YourMod.Tests.csproj package TestTheSpire --version 0.1.6
+dotnet add YourMod.Tests/YourMod.Tests.csproj package TestTheSpire --version 0.1.7
 ```
 
 一个最小项目文件可以这样写：
@@ -36,7 +36,7 @@ dotnet add YourMod.Tests/YourMod.Tests.csproj package TestTheSpire --version 0.1
 
   <ItemGroup>
     <ProjectReference Include="../yourmod.csproj" />
-    <PackageReference Include="TestTheSpire" Version="0.1.6" />
+    <PackageReference Include="TestTheSpire" Version="0.1.7" />
   </ItemGroup>
 </Project>
 ```
@@ -90,12 +90,12 @@ CombatTestBootstrap.Initialize(Assembly.GetExecutingAssembly(), new CombatTestOp
   "name": "yourmod.Tests",
   "author": "your team",
   "description": "Headless combat tests for yourmod.",
-  "version": "0.1.6",
-  "min_game_version": "0.110.1",
+  "version": "0.1.7",
+  "min_game_version": "0.111.0",
   "has_pck": false,
   "has_dll": true,
   "dependencies": [
-    { "id": "TestTheSpire", "min_version": "0.1.6" },
+    { "id": "TestTheSpire", "min_version": "0.1.7" },
     { "id": "yourmod", "min_version": null }
   ],
   "affects_gameplay": true
@@ -232,13 +232,13 @@ dotnet pack TestTheSpire.csproj -c Release
 NuGet 包会生成到：
 
 ```text
-artifacts/packages/TestTheSpire.0.1.6.nupkg
+artifacts/packages/TestTheSpire.0.1.7.nupkg
 ```
 
 发布到 nuget.org：
 
 ```bash
-dotnet nuget push artifacts/packages/TestTheSpire.0.1.6.nupkg \
+dotnet nuget push artifacts/packages/TestTheSpire.0.1.7.nupkg \
   --api-key "$NUGET_API_KEY" \
   --source https://api.nuget.org/v3/index.json \
   --skip-duplicate

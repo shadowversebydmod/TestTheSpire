@@ -1,4 +1,5 @@
 using MegaCrit.Sts2.Core.Entities.Multiplayer;
+using MegaCrit.Sts2.Core.Multiplayer;
 using MegaCrit.Sts2.Core.Multiplayer.Game;
 using MegaCrit.Sts2.Core.Multiplayer.Quality;
 using MegaCrit.Sts2.Core.Multiplayer.Serialization;
@@ -19,6 +20,8 @@ internal sealed class TestNetGameService(ulong netId, NetGameType type = NetGame
     public NetGameType Type => type;
 
     public PlatformType Platform => PlatformType.None;
+
+    public PeerVersionInfo LocalVersion { get; } = PeerVersionInfo.LocalDefault();
 
     public event Action<NetErrorInfo>? Disconnected;
 

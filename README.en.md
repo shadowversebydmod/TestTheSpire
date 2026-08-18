@@ -1,6 +1,6 @@
 # TestTheSpire
 
-[![NuGet](https://img.shields.io/nuget/v/TestTheSpire.svg)](https://www.nuget.org/packages/TestTheSpire/0.1.6)
+[![NuGet](https://img.shields.io/nuget/v/TestTheSpire.svg)](https://www.nuget.org/packages/TestTheSpire/0.1.7)
 
 TestTheSpire is a testing framework for Slay the Spire 2. It lets STS2 mod tests run from a plain command-line environment, without starting the game through Steam. In an AI-assisted development workflow, the same loop can write code, run tests, and bring the result back for review. Long card implementation runs become easier to keep reliable because failures point to a concrete combat test instead of a manual launch step.
 
@@ -21,7 +21,7 @@ This project depends on a local STS2 install. The build references `sts2.dll` an
 Create a separate test project, for example `YourMod.Tests/YourMod.Tests.csproj`. The test project usually references the mod project and the TestTheSpire package:
 
 ```bash
-dotnet add YourMod.Tests/YourMod.Tests.csproj package TestTheSpire --version 0.1.6
+dotnet add YourMod.Tests/YourMod.Tests.csproj package TestTheSpire --version 0.1.7
 ```
 
 A minimal project file can look like this:
@@ -36,7 +36,7 @@ A minimal project file can look like this:
 
   <ItemGroup>
     <ProjectReference Include="../yourmod.csproj" />
-    <PackageReference Include="TestTheSpire" Version="0.1.6" />
+    <PackageReference Include="TestTheSpire" Version="0.1.7" />
   </ItemGroup>
 </Project>
 ```
@@ -90,12 +90,12 @@ If the project keeps a static manifest, put `TestTheSpire` before the tested mod
   "name": "yourmod.Tests",
   "author": "your team",
   "description": "Headless combat tests for yourmod.",
-  "version": "0.1.6",
-  "min_game_version": "0.110.1",
+  "version": "0.1.7",
+  "min_game_version": "0.111.0",
   "has_pck": false,
   "has_dll": true,
   "dependencies": [
-    { "id": "TestTheSpire", "min_version": "0.1.6" },
+    { "id": "TestTheSpire", "min_version": "0.1.7" },
     { "id": "yourmod", "min_version": null }
   ],
   "affects_gameplay": true
@@ -232,13 +232,13 @@ dotnet pack TestTheSpire.csproj -c Release
 The NuGet package is written to:
 
 ```text
-artifacts/packages/TestTheSpire.0.1.6.nupkg
+artifacts/packages/TestTheSpire.0.1.7.nupkg
 ```
 
 For nuget.org:
 
 ```bash
-dotnet nuget push artifacts/packages/TestTheSpire.0.1.6.nupkg \
+dotnet nuget push artifacts/packages/TestTheSpire.0.1.7.nupkg \
   --api-key "$NUGET_API_KEY" \
   --source https://api.nuget.org/v3/index.json \
   --skip-duplicate
